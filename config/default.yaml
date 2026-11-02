@@ -1,0 +1,39 @@
+version: 1
+
+optimization:
+  mode: balanced
+  automation: automatic
+  preserve_reasoning: true
+  preserve_errors: true
+  preserve_requirements: true
+  preserve_security_constraints: true
+
+caveman:
+  enabled: true
+  mode: caveman
+  use_native_integrations: true
+
+graphify:
+  enabled: true
+  endpoint: https://api.graphify.com/mcp
+  default_budget: 2000
+  max_budget: 5000
+  skeleton_first: true
+  verify_index_freshness_for_critical_changes: true
+
+applications:
+  chatgpt:
+    enabled: true
+    integration: mcp
+    automatic_all_chats: false
+  codex:
+    enabled: true
+    integration: native-skill-and-hooks
+  claude_code:
+    enabled: true
+    integration: native-skill-and-hooks
+
+privacy:
+  store_conversation_content: false
+  store_api_keys: false
+  local_telemetry: false

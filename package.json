@@ -1,0 +1,25 @@
+{
+  "name": "contextpilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first context optimization coordinator for ChatGPT, Codex CLI, and Claude Code",
+  "type": "module",
+  "bin": { "contextpilot": "./dist/cli.js" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js",
+    "test": "npm run build && node --test tests/*.test.mjs"
+  },
+  "engines": { "node": ">=22.13.0" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "yaml": "^2.8.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  }
+}
