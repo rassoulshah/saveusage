@@ -38,7 +38,7 @@ export class CodexHost {
     });
   }
   async initialize() {
-    await this.request('initialize', { clientInfo: { name: 'contextpilot', version: '0.2.0' }, capabilities: { experimentalApi: true } });
+    await this.request('initialize', { clientInfo: { name: 'contextpilot', version: '0.3.0' }, capabilities: { experimentalApi: true } });
     this.child.stdin.write(JSON.stringify({ method: 'initialized' }) + '\n');
   }
   async graphify() {

@@ -12,6 +12,8 @@ test('portable skill installation preserves host settings and refuses to overwri
   const config=path.join(home,'.codex','config.toml');const settings='model_provider = "custom"\n';fs.writeFileSync(config,settings);
   const preview=installSkill('codex','user',{home,dryRun:true});assert.equal(fs.existsSync(preview.target),false);
   const first=installSkill('codex','user',{home});assert.equal(first.status,'installed');
+  const skillRoot=path.dirname(first.target);
+  for (const asset of ['runtime/bundle.mjs','bundled/graphify/graphifyy-0.9.100-py3-none-any.whl','bundled/caveman/cli/dist/index.js','bundled/graphify/LICENSE','bundled/caveman/LICENSE']) assert.ok(fs.existsSync(path.join(skillRoot,asset)),asset);
   assert.equal(installSkill('codex','user',{home}).status,'already-installed');
   fs.writeFileSync(first.target,'custom user changes');assert.throws(()=>installSkill('codex','user',{home}),/unchanged/);
   assert.equal(fs.readFileSync(config,'utf8'),settings);

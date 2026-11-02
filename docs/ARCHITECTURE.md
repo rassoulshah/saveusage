@@ -16,13 +16,13 @@ contents; overflow is explicit. It never edits input files or calls a model.
 Counts use the bundled cl100k_base tokenizer and include separators. They measure
 the supplied plain text, not tools, prompts, billed usage or model reasoning.
 
-The context planner uses a small bilingual keyword heuristic. Optional integrations
-are disabled in fresh defaults. Existing explicit YAML settings are retained.
+The context planner uses a small bilingual keyword heuristic. Bundled integrations
+are enabled with a local Graphify backend in fresh defaults. Existing explicit YAML settings are retained.
 Caveman paths are returned without repeatedly injecting its entire skill.
 
 ## Optional adapters
 
-MCP exposes six tools via stdio or authenticated single-tenant HTTP. HTTP requires
+MCP exposes seven tools via stdio or authenticated single-tenant HTTP. HTTP requires
 separate TLS deployment; actual ChatGPT compatibility is account-dependent.
 Graphify direct access uses real MCP initialize/list/call with bounded timeouts.
 The Codex-native bridge uses experimental app-server RPC and host-owned OAuth,
@@ -33,3 +33,14 @@ Graph output has a conservative UTF-8 byte bound, not a tokenizer guarantee.
 
 No inference proxy, transcript persistence, analytics, subscription validation,
 provider replacement or automatic host configuration edits exist in the core.
+
+## Bundled runtimes
+
+The skill tree includes pinned, unmodified upstream Caveman CLI/skill and Graphify
+wheel/reference files. manifest.json records sources, versions and file SHA256s.
+The standalone Node runtime helper verifies the wheel and explicitly creates an
+owned Python environment. Dependencies use upstream ranges and binary wheels;
+transitive Python packages are not fully locked. No existing environment is replaced.
+Graph indexing is local code-only AST extraction. Local MCP graph output is checked
+with cl100k_base and returns overflow explicitly. Caveman child telemetry is disabled;
+only help/version/tools are exposed. Native engine binaries are not included.

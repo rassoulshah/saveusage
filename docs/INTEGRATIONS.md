@@ -1,7 +1,9 @@
-# Optional integrations
+# Usage and integrations
 
-The public ContextPilot skill/plugin works with no Graphify, Caveman, MCP server,
-or account. Use the README installation first. These are optional extensions.
+ContextPilot includes Caveman 4.0.1 and Graphify 0.9.100. No separate upstream
+plugin or cloud account is required. See the README for installation and setup.
+Caveman instructions are read once for substantial tasks; local Graphify supplies
+structural retrieval. The context selector preserves protected text.
 
 ## MCP in Codex and Claude Code
 
@@ -16,12 +18,12 @@ claude mcp add --scope user contextpilot -- contextpilot mcp
 Use an absolute installed executable path if your GUI host has a different PATH.
 Do not replace existing same-name entries or change providers, models, credentials,
 gateway environment, or other plugins. Native skill/plugin installation does not
-require these registrations. Registering MCP exposes six tools, which also consume
+require these registrations. Registering MCP exposes seven tools, which also consume
 schema context; omit MCP if skill-only guidance fits your workflow.
 
-## Graphify
+## Optional Graphify Cloud
 
-Enable graphify in ContextPilot's YAML only if you want graph-aware planning.
+Local Graphify is the default. Set graphify.backend to cloud only for cloud planning.
 Configure your own Graphify MCP server and account; no personal credentials or
 repository configuration are shipped with ContextPilot. The code Graphify service
 is https://graphify.com and its console is https://app.graphify.com.
@@ -63,11 +65,22 @@ Upstream call edges describe static indexed coverage, not runtime execution proo
 
 ## Caveman
 
-Caveman is separately installed upstream software; it is not bundled. Enable it
-in YAML only if desired. ContextPilot returns the installed skill's path, not its
-entire instructions on each call. The host reads the skill when needed. Core
-concise-output guidance works without it. Never invent a compression API or rewrite
-memory files automatically; follow upstream workflows and explicit user intent.
+The original balanced skill and official CLI distribution are bundled. The host
+reads the skill when needed; it is not injected in full on every MCP call.
+`contextpilot caveman --help`, `--version`, and `tools` expose the CLI safely.
+Native caveman-engine binaries are not included; proxy, login, routing and hook
+installation commands are not exposed. No native-engine compression is claimed.
+An existing native Caveman skill can take precedence over the bundled fallback.
+
+## Local Graphify
+
+Run `contextpilot setup` once, then `contextpilot graph index .` in your project.
+Use `graph query "symbols"`, `graph path "from" "to"`, or `graph explain "symbol"`.
+The index uses AST extraction with code-only/no-cluster options and no model calls.
+The MCP server must run with the indexed repository as its working directory.
+`contextpilot_graph` offers query/path/explain with measured output bounds; setup
+and indexing stay explicit CLI operations. Refresh stale indexes after changes.
+If setup is unavailable, targeted source reads remain available.
 
 ## ChatGPT
 

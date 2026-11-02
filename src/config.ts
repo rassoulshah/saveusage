@@ -20,6 +20,7 @@ export const ConfigSchema = z.object({
     use_native_integrations: z.boolean()
   }),
   graphify: z.object({
+    backend: z.enum(["local", "cloud"]).default("local"),
     enabled: z.boolean(),
     endpoint: z.string().url(),
     default_budget: z.number().int().min(500).max(50000),
@@ -57,9 +58,10 @@ const defaults: ContextPilotConfig = {
     preserve_requirements: true,
     preserve_security_constraints: true
   },
-  caveman: { enabled: false, mode: "caveman", use_native_integrations: true },
+  caveman: { enabled: true, mode: "caveman", use_native_integrations: true },
   graphify: {
-    enabled: false,
+    backend: "local",
+    enabled: true,
     endpoint: "https://api.graphify.com/mcp",
     default_budget: 2000,
     max_budget: 5000,

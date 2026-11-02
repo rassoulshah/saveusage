@@ -1,7 +1,7 @@
 {
   "name": "@rassoulshah/contextpilot",
-  "version": "0.2.0",
-  "description": "Free local context selection, exact deduplication and token budgeting for AI coding tools",
+  "version": "0.3.0",
+  "description": "Combined Caveman skill and CLI, local Graphify engine, and protected context budgeting",
   "type": "module",
   "bin": {
     "contextpilot": "./dist/cli.js"
@@ -13,8 +13,9 @@
     "test": "npm run build && node --test tests/*.test.mjs",
     "mcp": "node dist/mcp-server.js",
     "mcp:http": "node dist/http-server.js",
-    "prepack": "npm run build",
-    "benchmark": "npm run build && node scripts/benchmark.mjs"
+    "prepack": "npm run verify:vendor && npm run build",
+    "benchmark": "npm run build && node scripts/benchmark.mjs",
+    "verify:vendor": "node scripts/check-vendor.mjs"
   },
   "engines": {
     "node": ">=22.13.0"
@@ -30,7 +31,7 @@
     "tsx": "^4.19.0",
     "typescript": "^5.8.0"
   },
-  "license": "MIT",
+  "license": "MIT AND Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rassoulshah/contextpilot.git"
@@ -49,7 +50,9 @@
     "LICENSE",
     "examples",
     "scripts/benchmark.mjs",
-    "docs"
+    "docs",
+    "THIRD_PARTY_NOTICES.md",
+    "scripts/check-vendor.mjs"
   ],
   "publishConfig": {
     "access": "public"

@@ -1,6 +1,7 @@
 # Publishing ContextPilot for free
 
-The project is MIT-licensed. There is no license server, paid ContextPilot tier,
+Original ContextPilot code is MIT-licensed; bundled upstream files are Apache-2.0.
+Retain THIRD_PARTY_NOTICES.md and all upstream licenses. There is no license server, paid ContextPilot tier,
 subscription, required API key, telemetry, or bundled inference service. Optional
 third-party services have their own terms and pricing.
 
@@ -26,6 +27,7 @@ required publishing security/2FA. Then:
 ```sh
 npm ci --ignore-scripts
 npm test
+npm run verify:vendor
 npm run benchmark
 npm pack --dry-run
 npm publish --access public
@@ -40,7 +42,7 @@ Users can run `npm install -g @rassoulshah/contextpilot` only after that release
 - Native Claude plugin validates and its hook emits valid SessionStart JSON.
 - Fresh-home installation works, is idempotent, and refuses different existing skills.
 - Tests cover protected-block preservation, budget overflow, exact deduplication,
-  local MCP, optional native Graphify, and HTTP authentication.
+  local MCP, bundled Graphify indexing/query/path, optional native Graphify, and HTTP authentication.
 - npm tarball includes runtime output, license, skill and manifests, with no local
   audit snapshots, secrets, node_modules, or developer filesystem paths.
 - Verify packed-package installation in a clean temporary directory.
@@ -50,10 +52,13 @@ Users can run `npm install -g @rassoulshah/contextpilot` only after that release
 ## Removal
 
 Claude plugin users: `/plugin uninstall contextpilot@contextpilot-plugins`.
-Skill-only users can remove only the SKILL.md path reported by the installer.
+Skill-only users can remove only the ContextPilot skill directory reported by the installer.
 If installed globally with npm, use `npm uninstall -g @rassoulshah/contextpilot`.
 Remove a manually registered ContextPilot MCP server separately through its host.
 No provider, model, gateway, or unrelated plugin settings need restoration.
 
 A CI template is provided in docs/ci-workflow.yml. Enable it under
 .github/workflows when your publishing credentials have workflow permission.
+
+Vendor updates require a new pinned source/version, manifest file hashes, notices
+and fresh runtime/package verification. Never silently replace upstream assets.

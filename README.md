@@ -1,6 +1,6 @@
 # ContextPilot
 
-**Free, MIT-licensed context optimization for AI coding tools.**
+**Free context optimization with bundled Caveman and local Graphify.**
 
 ContextPilot helps agents read less irrelevant material, avoid repeated output,
 and keep important information intact. It includes a portable skill for Codex and
@@ -17,7 +17,7 @@ required. Your existing provider, model, gateway and other plugins stay yours.
 - Keeps marked requirements, decisions, constraints, errors, code and test evidence
   verbatim. If those exceed the budget, it reports overflow instead of deleting them.
 - Reports before/after counts using `cl100k_base`, with no model calls or uploads.
-- Optionally uses your existing Graphify index or native Caveman skill.
+- Includes Caveman 4.0.1 concise-response skill/CLI and Graphify 0.9.100 local code graph engine.
 
 This is context selection and concise workflow guidance. It cannot rewrite a
 model's hidden context window, intercept every ChatGPT message, or guarantee lower
@@ -58,8 +58,8 @@ Restart the host to discover the skill. No host configuration files are edited.
 Install the public GitHub release without an npm account:
 
 ```sh
-npm install -g https://github.com/rassoulshah/contextpilot/releases/download/v0.2.0/rassoulshah-contextpilot-0.2.0.tgz
-contextpilot install codex
+npm install -g https://github.com/rassoulshah/contextpilot/releases/download/v0.3.0/rassoulshah-contextpilot-0.3.0.tgz
+contextpilot setup codex
 ```
 
 You can also install a downloaded file with `npm install -g /path/to/package.tgz`.
@@ -107,6 +107,7 @@ Register that command with your MCP host if you want these tools:
 | `contextpilot_context` | Task classification and bounded retrieval guidance |
 | `contextpilot_plan` | Explicit retrieval plan |
 | `contextpilot_policy` | Current boundaries |
+| `contextpilot_graph` | Bundled local read-only query/path/explain |
 | `contextpilot_graphify_status` | Optional live Graphify discovery |
 | `contextpilot_graphify_call` | Optional bounded, read-only Graphify calls |
 
@@ -114,14 +115,39 @@ MCP registration is optional; the native skill/plugin works independently. For
 ChatGPT, availability depends on the account's MCP support and remote deployment;
 it is not a universal ChatGPT plugin. See [deployment limitations](docs/DEPLOYMENT.md).
 
-## Optional integrations
+## Using the included plugins
 
-New configurations disable Graphify and Caveman. Existing explicit settings are
-preserved. Run `contextpilot init`, then enable desired integrations in
-`~/.config/contextpilot/config.yaml`. No hosted index is needed for the local core.
-Graphify Cloud may have its own pricing and requires your own account/index.
-Caveman is separately installed upstream software; neither dependency is bundled
-or required. See [integration guide](docs/INTEGRATIONS.md).
+No separate Caveman or Graphify plugin installation is required. Node >=22.13
+is required; Graphify setup also needs Python >=3.10 (uv preferred, otherwise
+venv/pip). Initial setup downloads parser dependencies into an isolated environment.
+After installing the release:
+
+```sh
+contextpilot setup codex
+# From the code repository you want to explore:
+contextpilot graph index .
+contextpilot graph query "authentication middleware"
+contextpilot graph path "sourceSymbol" "targetSymbol"
+contextpilot graph explain "symbolName"
+contextpilot bundled
+contextpilot caveman --help
+```
+
+Use `setup claude` for a standalone Claude skill, or `setup` to initialize only
+the Graphify runtime. Claude marketplace users can ask the agent to run the
+bundled `runtime/bundle.mjs setup` helper; npm/build is unnecessary for that path.
+Indexing is code-only, local, and makes no model calls. It writes `graphify-out`.
+Reindex after relevant code changes. Caveman's balanced skill guides concise
+responses; its CLI distribution is included, but native compression-engine
+binaries, inference proxy and login/routing installers are not enabled or bundled.
+This is not every upstream feature in a single executable.
+
+Fresh configurations enable both integrations with local Graphify. Existing YAML
+settings are preserved, including explicit disabled settings. Existing different
+installed skills are refused: back up your old ContextPilot skill directory and
+remove that directory before installing the new version. Never remove other skills.
+Graphify Cloud is optional and has separate account requirements and pricing.
+See the [usage and integration guide](docs/INTEGRATIONS.md).
 
 ## Verify and contribute
 
@@ -135,4 +161,4 @@ The benchmark is a synthetic demonstration of duplicate/noise removal, not a
 coding-agent billing or quality benchmark. Do not advertise its percentage as
 expected savings. Bugs, tests and real workload evaluations are welcome.
 
-[MIT license](LICENSE) · [Publishing guide](docs/PUBLISHING.md)
+[Core MIT license](LICENSE) · [Bundled Apache-2.0 notices](THIRD_PARTY_NOTICES.md) · [Publishing guide](docs/PUBLISHING.md)

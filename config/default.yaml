@@ -9,12 +9,13 @@ optimization:
   preserve_security_constraints: true
 
 caveman:
-  enabled: false
+  enabled: true
   mode: caveman
   use_native_integrations: true
 
 graphify:
-  enabled: false
+  backend: local
+  enabled: true
   endpoint: https://api.graphify.com/mcp
   default_budget: 2000
   max_budget: 5000

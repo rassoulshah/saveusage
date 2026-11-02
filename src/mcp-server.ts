@@ -7,12 +7,13 @@ import { repositoryIdentity } from "./graphify.js";
 import { prepareContext } from "./context.js";
 import { graphifyStatus, graphifyCall, graphifyFailure } from "./graphify.js";
 import { z } from "zod";
-import { ContextEntrySchema, optimizeContext } from "./optimizer.js";
+import { graphCommand } from "../integrations/contextpilot/runtime/bundle.mjs";
+import { ContextEntrySchema, optimizeContext, countTokens } from "./optimizer.js";
 import { loadConfig } from "./config.js";
 import { createRetrievalPlan, formatPlan, type TaskKind } from "./policy.js";
 
 export function createServer() {
-const server = new McpServer({ name: "contextpilot", version: "0.2.0" });
+const server = new McpServer({ name: "contextpilot", version: "0.3.0" });
 
 server.tool(
   "contextpilot_plan",
@@ -92,6 +93,17 @@ server.tool("contextpilot_graphify_call", "Call a Graphify tool previously disco
 server.tool("contextpilot_optimize", "Select provided context locally: deduplicate exact blocks, preserve marked critical blocks verbatim, budget optional blocks. No inference or network. Count uses cl100k_base; not a billing guarantee.", { entries: z.array(ContextEntrySchema).max(500), budget: z.number().int().min(1).max(50000).default(2000) }, async input => {
   const result = optimizeContext(input);
   return { content: [{ type: "text", text: JSON.stringify(result) }] };
+});
+server.tool("contextpilot_graph", "Query the bundled local Graphify index in the server working directory. No account, upload or model call. Read-only; setup and indexing are explicit CLI operations.", { operation: z.enum(["query", "path", "explain"]), arguments: z.array(z.string().min(1).max(4000)).max(2), budget: z.number().int().min(1).max(5000).default(2000) }, async ({ operation, arguments: args, budget }) => {
+  const config = loadConfig();
+  if (!config.graphify.enabled || config.optimization.mode === "off") return { isError: true, content: [{ type: "text", text: "Graphify disabled by policy" }] };
+  try {
+    const limit = Math.min(budget, config.graphify.max_budget);
+    const result = await graphCommand(operation, args, { budget: limit });
+    const tokens = countTokens(result.stdout);
+    if (tokens > limit) return { isError: true, content: [{ type: "text", text: JSON.stringify({ status: "budget-exceeded", tokens, budget: limit, action: "Narrow the query or increase the budget; no graph content was silently truncated." }) }] };
+    return { isError: result.code !== 0, content: [{ type: "text", text: JSON.stringify({ text: result.stdout, diagnostic: result.code !== 0 ? result.stderr.slice(0, 1000) : undefined, exitCode: result.code, tokens, untrusted: true }) }] };
+  } catch { return { isError: true, content: [{ type: "text", text: "Local Graphify unavailable. Run contextpilot setup, then contextpilot graph index in this repository; fall back to local source reads." }] }; }
 });
 return server;
 }

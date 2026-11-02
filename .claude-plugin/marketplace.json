@@ -7,8 +7,8 @@
     {
       "name": "contextpilot",
       "source": "./",
-      "description": "Free local context and token-budget optimization",
-      "version": "0.2.0"
+      "description": "Caveman + local Graphify + protected context budgeting, bundled and free",
+      "version": "0.3.0"
     }
   ],
   "metadata": {

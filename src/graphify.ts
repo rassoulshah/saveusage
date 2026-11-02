@@ -18,7 +18,7 @@ export async function withGraphify<T>(endpoint: string, run: (client: Client) =>
   const url = new URL(endpoint);
   if (url.username || url.password || url.search || url.hash) throw new Error('Graphify endpoint must not contain credentials, query, or fragment');
   if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))) throw new Error('Graphify requires HTTPS except loopback');
-  const client = new Client({ name: 'contextpilot', version: '0.2.0' });
+  const client = new Client({ name: 'contextpilot', version: '0.3.0' });
   const transport = new StreamableHTTPClientTransport(url, {
     requestInit: token ? { headers: { Authorization: `Bearer ${token}` } } : undefined,
     fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.any([AbortSignal.timeout(10000), ...(init?.signal ? [init.signal] : [])]) })

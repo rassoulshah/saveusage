@@ -1,12 +1,13 @@
 # Roadmap
 
-## Public 0.2 release
+## Public 0.3 release
 
 - MIT license, Claude marketplace/plugin, Codex and Claude skill installation.
 - Local whole-block context selection, exact deduplication and measured token counts.
 - Verbatim protected content, explicit overflow and omitted-block accounting.
-- Standalone CLI and optional six-tool MCP server.
-- Optional native Caveman and Graphify adapters; neither needed for free local use.
+- Standalone CLI and optional seven-tool MCP server.
+- Bundled Caveman skill/CLI and local Graphify wheel, with explicit isolated setup.
+- Optional cloud adapters; local graph operations require no account or model.
 - Package, fresh-install, transport and safety tests; synthetic benchmark.
 
 ## Further evaluation

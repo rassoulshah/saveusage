@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from "node:fs";
+import { bundledStatus, setupGraphify, graphCommand, cavemanCommand } from "../integrations/contextpilot/runtime/bundle.mjs";
 import { installSkill } from "./install.js";
 import { optimizeContext } from "./optimizer.js";
 import { codexGraphifyStatus } from "./codex-host.js";
@@ -35,11 +36,15 @@ function existsOnPath(binary: string): boolean {
 }
 
 function help(): void {
-  out(`ContextPilot 0.2.0
+  out(`ContextPilot 0.3.0
 
 Usage:
   contextpilot init
   contextpilot install <codex|claude> [--project] [--dry-run]
+  contextpilot setup [codex|claude] [--project]
+  contextpilot bundled
+  contextpilot graph <index|query|path|explain> <arguments>
+  contextpilot caveman [--help|--version|tools]
   contextpilot optimize <input.json|->
   contextpilot mcp
   contextpilot doctor
@@ -56,13 +61,36 @@ try {
   switch (command) {
     case "--version":
     case "-v":
-      out("0.2.0");
+      out("0.3.0");
       break;
     case "help":
     case "--help":
     case "-h":
       help();
       break;
+    case "bundled":
+      out(JSON.stringify(bundledStatus(), null, 2));
+      break;
+    case "setup": {
+      const host = args[0];
+      if (host && !["codex", "claude"].includes(host)) throw new Error("Choose codex or claude, or omit host to initialize runtime only");
+      if (args.slice(1).some(a => a !== "--project")) throw new Error("Unknown setup option");
+      if (host) installSkill(host as "codex" | "claude", args.includes("--project") ? "project" : "user", { dryRun: true });
+      process.stderr.write("Setting up bundled Graphify in an isolated environment; dependency downloads may take a few minutes.\n");
+      out(JSON.stringify(await setupGraphify(), null, 2));
+      if (host) out(JSON.stringify(installSkill(host as "codex" | "claude", args.includes("--project") ? "project" : "user"), null, 2));
+      break;
+    }
+    case "graph": {
+      const result = await graphCommand(args[0], args.slice(1));
+      process.stdout.write(result.stdout); process.stderr.write(result.stderr); process.exitCode = result.code;
+      break;
+    }
+    case "caveman": {
+      const result = await cavemanCommand(args);
+      process.stdout.write(result.stdout); process.stderr.write(result.stderr); process.exitCode = result.code;
+      break;
+    }
     case "install": {
       const host = args[0];
       if (host !== "codex" && host !== "claude") throw new Error("Choose codex or claude");
@@ -106,7 +134,8 @@ try {
           config.graphify.endpoint
         }`
       );
-      out(`Caveman native skill: ${cavemanSkill(config.caveman.mode).status}`);
+      out(`Caveman skill: ${cavemanSkill(config.caveman.mode).status}; bundled CLI ${bundledStatus().caveman.version}`);
+      out(`Bundled Graphify ${bundledStatus().graphify.version}: ${bundledStatus().graphify.setupComplete ? "runtime ready" : "run contextpilot setup"}`);
       out("Run contextpilot graphify-status for live connectivity; repository indexing remains separately verified.");
       out("! Existing provider and credential settings are not modified.");
       break;
