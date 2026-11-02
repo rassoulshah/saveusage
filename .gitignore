@@ -4,3 +4,8 @@ dist/
 *.log
 .DS_Store
 coverage/
+
+# Official vendored CLI runtime is part of the distributable source.
+!integrations/contextpilot/bundled/caveman/cli/dist/
+!integrations/contextpilot/bundled/caveman/cli/dist/**
+*.tgz
