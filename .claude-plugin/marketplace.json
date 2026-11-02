@@ -1,0 +1,17 @@
+{
+  "name": "contextpilot-plugins",
+  "owner": {
+    "name": "ContextPilot contributors"
+  },
+  "plugins": [
+    {
+      "name": "contextpilot",
+      "source": "./",
+      "description": "Free local context and token-budget optimization",
+      "version": "0.2.0"
+    }
+  ],
+  "metadata": {
+    "description": "Free, open-source tools for reducing unnecessary AI coding context."
+  }
+}

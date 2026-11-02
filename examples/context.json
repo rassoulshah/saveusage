@@ -1,0 +1,10 @@
+{
+  "budget": 100,
+  "entries": [
+    { "id": "requirement", "kind": "requirement", "text": "Do not change the API response format." },
+    { "id": "error", "kind": "error", "text": "TypeError: Cannot read properties of undefined (reading 'id')" },
+    { "id": "repeated-error", "kind": "error", "text": "TypeError: Cannot read properties of undefined (reading 'id')" },
+    { "id": "relevant", "priority": 100, "text": "The failure occurs in the user lookup before serialization." },
+    { "id": "unrelated", "priority": 0, "text": "An unrelated UI theme preference was discussed earlier. It does not affect this error and is optional context." }
+  ]
+}

@@ -15,7 +15,12 @@ npm install
 or exit 1
 npm run build
 or exit 1
+chmod +x dist/cli.js
 npm link
 or exit 1
+set -l npm_bin (npm prefix -g)/bin
+if not contains -- $npm_bin $PATH
+    fish_add_path $npm_bin
+end
 contextpilot init
 contextpilot doctor

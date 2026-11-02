@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 import fs from "node:fs";
+import { installSkill } from "./install.js";
+import { optimizeContext } from "./optimizer.js";
+import { codexGraphifyStatus } from "./codex-host.js";
+import { repositoryIdentity } from "./graphify.js";
+import { prepareContext, cavemanSkill } from "./context.js";
+import { graphifyStatus } from "./graphify.js";
 import path from "node:path";
 import { configPath, initializeConfig, loadConfig } from "./config.js";
 import { createRetrievalPlan, formatPlan, type TaskKind } from "./policy.js";
@@ -29,13 +35,18 @@ function existsOnPath(binary: string): boolean {
 }
 
 function help(): void {
-  out(`ContextPilot 0.1.0
+  out(`ContextPilot 0.2.0
 
 Usage:
   contextpilot init
+  contextpilot install <codex|claude> [--project] [--dry-run]
+  contextpilot optimize <input.json|->
+  contextpilot mcp
   contextpilot doctor
   contextpilot status
   contextpilot plan <${tasks.join("|")}>
+  contextpilot context <prompt>
+  contextpilot graphify-status [--host codex] [--tool name]
   contextpilot integrations
 
 Config: ${configPath}`);
@@ -43,11 +54,35 @@ Config: ${configPath}`);
 
 try {
   switch (command) {
+    case "--version":
+    case "-v":
+      out("0.2.0");
+      break;
     case "help":
     case "--help":
     case "-h":
       help();
       break;
+    case "install": {
+      const host = args[0];
+      if (host !== "codex" && host !== "claude") throw new Error("Choose codex or claude");
+      if (args.slice(1).some(a => !["--project", "--dry-run"].includes(a))) throw new Error("Unknown install option");
+      out(JSON.stringify(installSkill(host, args.includes("--project") ? "project" : "user", { dryRun: args.includes("--dry-run") }), null, 2));
+      break;
+    }
+    case "optimize": {
+      if (args.length !== 1) throw new Error("Provide an input JSON file, or - for stdin");
+      const input = fs.readFileSync(args[0] === "-" ? 0 : args[0], "utf8");
+      if (Buffer.byteLength(input) > 2000000) throw new Error("Input exceeds 2 MB");
+      out(JSON.stringify(optimizeContext(JSON.parse(input)), null, 2));
+      break;
+    }
+    case "mcp": {
+      const { createServer } = await import("./mcp-server.js");
+      const { StdioServerTransport } = await import("@modelcontextprotocol/sdk/server/stdio.js");
+      await createServer().connect(new StdioServerTransport());
+      break;
+    }
     case "init":
       out(
         initializeConfig() === "created"
@@ -71,8 +106,9 @@ try {
           config.graphify.endpoint
         }`
       );
-      out("! OAuth, repository indexing, and remote MCP connectivity are not tested.");
-      out("! Existing NSEC provider configuration was not read or modified.");
+      out(`Caveman native skill: ${cavemanSkill(config.caveman.mode).status}`);
+      out("Run contextpilot graphify-status for live connectivity; repository indexing remains separately verified.");
+      out("! Existing provider and credential settings are not modified.");
       break;
     }
     case "status": {
@@ -110,24 +146,22 @@ try {
       out(formatPlan(createRetrievalPlan(loadConfig(), task)));
       break;
     }
+    case "context":
+      if (!args.length) throw new Error("Provide a task prompt");
+      out(JSON.stringify(prepareContext(args.join(" ")), null, 2));
+      break;
+    case "graphify-status": {
+      const config = loadConfig();
+      const result = config.graphify.enabled ? (args.includes("--host") && args[args.indexOf("--host") + 1] === "codex" ? await codexGraphifyStatus(repositoryIdentity().repository?.replace("https://github.com/", ""), args.includes("--tool") ? args[args.indexOf("--tool") + 1] : undefined) : await graphifyStatus(config.graphify.endpoint)) : { status: "disabled" };
+      out(JSON.stringify(result, null, 2));
+      if (result.status !== "connected" && result.status !== "disabled") process.exitCode = 1;
+      break;
+    }
     case "integrations":
-      out(`Graphify for Codex (additive MCP registration):
-  codex mcp add graphify --url https://api.graphify.com/mcp
-  codex mcp login graphify
-  codex mcp list
-
-Caveman for Codex (review upstream instructions/hooks first):
-  npx -y github:JuliusBrussee/caveman -- --only codex
-
-Caveman CLI:
-  npm install -g @caveman-ai/cli@latest
-  caveman doctor
-  caveman status
-
-For Claude Code, use the current native Caveman integration and Graphify HTTP MCP/OAuth instructions for your installed versions.
-
-These commands are informational only; ContextPilot does not execute them or edit agent configuration.
-Back up existing agent settings before adding integrations. Preserve NSEC provider/model/auth settings.`);
+      out(`See docs/INTEGRATIONS.md for additive host setup and rollback.
+Check MCP lists before adding any server. Preserve existing provider/model/auth settings.
+Caveman and Graphify are optional; the local core needs no account or API key.
+Run contextpilot graphify-status for a real MCP handshake. Host OAuth remains separate.`);
       break;
     default:
       help();

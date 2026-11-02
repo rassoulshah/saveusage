@@ -21,7 +21,7 @@ export function createRetrievalPlan(
   task: TaskKind
 ): RetrievalPlan {
   const complex = ["implementation", "debugging", "review"].includes(task);
-  const useGraphify = config.graphify.enabled && task !== "simple";
+  const useGraphify = config.optimization.mode !== "off" && config.graphify.enabled && task !== "simple";
 
   return {
     useGraphify,

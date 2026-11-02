@@ -1,0 +1,10 @@
+{
+  "name": "contextpilot",
+  "version": "0.2.0",
+  "description": "Free local context budgeting, exact deduplication and concise coding workflows. Optional Graphify and Caveman integrations.",
+  "author": { "name": "ContextPilot contributors" },
+  "homepage": "https://github.com/rassoulshah/contextpilot",
+  "repository": "https://github.com/rassoulshah/contextpilot",
+  "license": "MIT",
+  "skills": ["./integrations/contextpilot"]
+}

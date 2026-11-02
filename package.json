@@ -1,25 +1,65 @@
 {
-  "name": "contextpilot",
-  "version": "0.1.0",
-  "private": true,
-  "description": "Local-first context optimization coordinator for ChatGPT, Codex CLI, and Claude Code",
+  "name": "@rassoulshah/contextpilot",
+  "version": "0.2.0",
+  "description": "Free local context selection, exact deduplication and token budgeting for AI coding tools",
   "type": "module",
-  "bin": { "contextpilot": "./dist/cli.js" },
+  "bin": {
+    "contextpilot": "./dist/cli.js"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
     "start": "node dist/cli.js",
-    "test": "npm run build && node --test tests/*.test.mjs"
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "mcp": "node dist/mcp-server.js",
+    "mcp:http": "node dist/http-server.js",
+    "prepack": "npm run build",
+    "benchmark": "npm run build && node scripts/benchmark.mjs"
   },
-  "engines": { "node": ">=22.13.0" },
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
+    "js-tiktoken": "^1.0.21",
     "yaml": "^2.8.0",
-    "zod": "^3.25.0"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
     "tsx": "^4.19.0",
     "typescript": "^5.8.0"
-  }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rassoulshah/contextpilot.git"
+  },
+  "homepage": "https://github.com/rassoulshah/contextpilot#readme",
+  "bugs": {
+    "url": "https://github.com/rassoulshah/contextpilot/issues"
+  },
+  "files": [
+    "dist",
+    "integrations",
+    "hooks",
+    ".claude-plugin",
+    "config/default.yaml",
+    "README.md",
+    "LICENSE",
+    "examples",
+    "scripts/benchmark.mjs",
+    "docs"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "context",
+    "tokens",
+    "mcp",
+    "codex",
+    "claude-code",
+    "plugin"
+  ]
 }

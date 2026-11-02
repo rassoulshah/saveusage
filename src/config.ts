@@ -4,7 +4,7 @@ import path from "node:path";
 import YAML from "yaml";
 import { z } from "zod";
 
-const ConfigSchema = z.object({
+export const ConfigSchema = z.object({
   version: z.number().int().positive(),
   optimization: z.object({
     mode: z.enum(["off", "balanced", "aggressive"]),
@@ -41,7 +41,7 @@ const ConfigSchema = z.object({
     store_api_keys: z.boolean(),
     local_telemetry: z.boolean()
   })
-});
+}).refine(c => c.graphify.default_budget <= c.graphify.max_budget, { message: "default_budget must not exceed max_budget" });
 
 export type ContextPilotConfig = z.infer<typeof ConfigSchema>;
 export const configDir = path.join(os.homedir(), ".config", "contextpilot");
@@ -57,9 +57,9 @@ const defaults: ContextPilotConfig = {
     preserve_requirements: true,
     preserve_security_constraints: true
   },
-  caveman: { enabled: true, mode: "caveman", use_native_integrations: true },
+  caveman: { enabled: false, mode: "caveman", use_native_integrations: true },
   graphify: {
-    enabled: true,
+    enabled: false,
     endpoint: "https://api.graphify.com/mcp",
     default_budget: 2000,
     max_budget: 5000,

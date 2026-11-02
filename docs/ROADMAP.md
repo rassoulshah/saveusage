@@ -1,23 +1,20 @@
 # Roadmap
 
-## v0.1.0 — safe foundation
-- Shared YAML configuration and validation.
-- Balanced task-aware retrieval plans.
-- CLI diagnostics and MCP policy tools.
-- Non-invasive integration guidance.
+## Public 0.2 release
 
-## v0.2 — native agent adapters
-- Version-aware Codex and Claude Code lifecycle adapters.
-- Config patch preview, backup, and rollback using structured parsers.
-- Integration fixtures for supported host versions.
+- MIT license, Claude marketplace/plugin, Codex and Claude skill installation.
+- Local whole-block context selection, exact deduplication and measured token counts.
+- Verbatim protected content, explicit overflow and omitted-block accounting.
+- Standalone CLI and optional six-tool MCP server.
+- Optional native Caveman and Graphify adapters; neither needed for free local use.
+- Package, fresh-install, transport and safety tests; synthetic benchmark.
 
-## v0.3 — measurement and ChatGPT deployment
-- Host-provided token usage measurement without transcript storage.
-- Authenticated remote MCP deployment option for ChatGPT.
-- Integration tests and regression evaluation.
+## Further evaluation
 
-## Principles
-- No inference proxy.
-- No provider replacement.
-- No secret or transcript storage.
-- Never trade correctness or security for token reduction.
+- Real coding-task comparisons: total billed tokens, quality and failed-task rates.
+- Additional model tokenizers and priority/retrieval strategies.
+- More host/version compatibility coverage and supported lifecycle hooks.
+- Optional npm registry release and authenticated remote ChatGPT deployment.
+
+Do not advertise a percentage from the synthetic fixture as expected user savings.
+Do not claim global hidden-context compression or universal ChatGPT automation.

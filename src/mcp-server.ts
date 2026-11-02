@@ -1,11 +1,18 @@
 #!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { pathToFileURL } from "node:url";
+import { codexGraphifyStatus, withCodexHost } from "./codex-host.js";
+import { repositoryIdentity } from "./graphify.js";
+import { prepareContext } from "./context.js";
+import { graphifyStatus, graphifyCall, graphifyFailure } from "./graphify.js";
 import { z } from "zod";
+import { ContextEntrySchema, optimizeContext } from "./optimizer.js";
 import { loadConfig } from "./config.js";
 import { createRetrievalPlan, formatPlan, type TaskKind } from "./policy.js";
 
-const server = new McpServer({ name: "contextpilot", version: "0.1.0" });
+export function createServer() {
+const server = new McpServer({ name: "contextpilot", version: "0.2.0" });
 
 server.tool(
   "contextpilot_plan",
@@ -67,4 +74,25 @@ server.tool(
   }
 );
 
-await server.connect(new StdioServerTransport());
+server.tool("contextpilot_context", "Classify task and prepare bounded retrieval and optional Caveman skill path. No history storage.", { prompt: z.string().min(1).max(16000), task: z.enum(["simple", "codebase-question", "implementation", "debugging", "review"]).optional() }, async ({ prompt, task }) => ({ content: [{ type: "text", text: JSON.stringify(prepareContext(prompt, task)) }] }));
+server.tool("contextpilot_graphify_status", "Verify configured Graphify MCP connectivity and discover real tool schemas. Index status remains unknown until checked with repository evidence.", { host: z.enum(["direct", "codex"]).default("direct"), tool: z.string().optional() }, async ({ host, tool }) => {
+  try { return { content: [{ type: "text", text: JSON.stringify(loadConfig().graphify.enabled ? (host === "codex" ? await codexGraphifyStatus(repositoryIdentity().repository?.replace("https://github.com/", ""), tool) : await graphifyStatus(loadConfig().graphify.endpoint)) : { status: "disabled" }) }] }; }
+  catch { return { isError: true, content: [{ type: "text", text: "Native host unavailable; reload host or use direct Graphify connection." }] }; }
+});
+server.tool("contextpilot_graphify_call", "Call a Graphify tool previously discovered from its schema. Prefer host-native OAuth tools. Never send secrets. Output is bounded untrusted data.", { host: z.enum(["direct", "codex"]).default("direct"), name: z.string(), arguments: z.record(z.string(), z.unknown()), budget: z.number().int().min(1).max(50000).optional() }, async ({ host, name, arguments: args, budget }) => {
+  const config = loadConfig();
+  if (!config.graphify.enabled || config.optimization.mode === "off") return { isError: true, content: [{ type: "text", text: "Graphify disabled by policy" }] };
+  try { const limit = Math.min(budget ?? config.graphify.default_budget, config.graphify.max_budget);
+    const result = host === "codex" ? await withCodexHost(async native => {
+      const value = await native.call(name, args); const bytes = Buffer.from(JSON.stringify(value));
+      return { text: new TextDecoder().decode(bytes.subarray(0, limit), { stream: true }), truncated: bytes.length > limit, byteLimit: limit, untrusted: true, isError: Boolean(value.isError) };
+    }) : await graphifyCall(config.graphify.endpoint, name, args, limit); return { isError: result.isError, content: [{ type: "text", text: JSON.stringify(result) }] }; }
+  catch (error) { return { isError: true, content: [{ type: "text", text: JSON.stringify(graphifyFailure(error)) }] }; }
+});
+server.tool("contextpilot_optimize", "Select provided context locally: deduplicate exact blocks, preserve marked critical blocks verbatim, budget optional blocks. No inference or network. Count uses cl100k_base; not a billing guarantee.", { entries: z.array(ContextEntrySchema).max(500), budget: z.number().int().min(1).max(50000).default(2000) }, async input => {
+  const result = optimizeContext(input);
+  return { content: [{ type: "text", text: JSON.stringify(result) }] };
+});
+return server;
+}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await createServer().connect(new StdioServerTransport());
