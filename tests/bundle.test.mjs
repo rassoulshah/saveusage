@@ -1,13 +1,14 @@
 import test from 'node:test';
+import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { bundledStatus, cavemanCommand, graphCommand, setupGraphify } from '../integrations/contextpilot/runtime/bundle.mjs';
+import { bundledStatus, cavemanCommand, graphCommand, setupGraphify } from '../integrations/saveusage/runtime/bundle.mjs';
 import { cavemanSkill } from '../dist/context.js';
 
 test('the package contains real upstream skills and CLI without external installations',async()=>{
- const root=fs.mkdtempSync(path.join(os.tmpdir(),'contextpilot-bundle-'));
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'saveusage-bundle-'));
  try {
   const status=bundledStatus(root);
   assert.equal(status.caveman.version,'4.0.1');assert.equal(status.graphify.version,'0.9.100');
@@ -21,7 +22,7 @@ test('the package contains real upstream skills and CLI without external install
 });
 
 test('setup refuses to overwrite an unrelated runtime',async()=>{
- const root=fs.mkdtempSync(path.join(os.tmpdir(),'contextpilot-unowned-'));
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'saveusage-unowned-'));
  try {
   const environment=path.join(root,'graphify-0.9.100');fs.mkdirSync(environment);fs.writeFileSync(path.join(environment,'user-data'),'keep');
   await assert.rejects(setupGraphify({dataDir:root}),/unowned/);
@@ -30,16 +31,21 @@ test('setup refuses to overwrite an unrelated runtime',async()=>{
 });
 
 test('bundled local Graphify indexes code and resolves a genuine call path', {skip:!bundledStatus().graphify.setupComplete}, async()=>{
- const root=fs.mkdtempSync(path.join(os.tmpdir(),'contextpilot-graph-test-'));
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'saveusage-graph-test-'));
  try {
+  execFileSync('git',['init','--quiet',root]);
   fs.writeFileSync(path.join(root,'index.js'),'export function greet(name) { return format(name); }\nexport function format(name) { return `Hello ${name}`; }\n');
   fs.writeFileSync(path.join(root,'notes.md'),'This document is intentionally skipped by the code-only wrapper.');
   const indexed=await graphCommand('index',['.'],{cwd:root});assert.equal(indexed.code,0,indexed.stderr);
-  const graph=JSON.parse(fs.readFileSync(path.join(root,'graphify-out/graph.json'),'utf8'));
+  const graph=JSON.parse(fs.readFileSync(path.join(root,'saveusage/graph.json'),'utf8'));
   assert.ok(graph.nodes.length>=3);
+  assert.equal(fs.existsSync(path.join(root,'graphify-out')),false);
+  assert.equal(fs.existsSync(path.join(root,'saveusage/saveusage-snapshot.json')),true);
   const query=await graphCommand('query',['greet format'],{cwd:root});assert.equal(query.code,0);assert.match(query.stdout,/greet/);
   const route=await graphCommand('path',['greet','format'],{cwd:root});assert.equal(route.code,0);assert.match(route.stdout,/greet\(\).*calls.*format\(\)/);
   const explain=await graphCommand('explain',['greet'],{cwd:root});assert.equal(explain.code,0);assert.match(explain.stdout,/greet/);
+  fs.appendFileSync(path.join(root,'index.js'),'\nexport const added = 1;\n');
+  await assert.rejects(graphCommand('query',['greet'],{cwd:root}),/Source or graph changed/);
   await assert.rejects(graphCommand('extract',['.'],{cwd:root}),/Choose graph/);
   await assert.rejects(graphCommand('query',['greet'],{cwd:root,budget:9000}),/budget/);
  }finally{fs.rmSync(root,{recursive:true,force:true});}

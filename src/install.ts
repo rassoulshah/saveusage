@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 export function installSkill(host: 'codex' | 'claude', scope: 'user' | 'project', options: { home?: string; cwd?: string; dryRun?: boolean } = {}) {
   const base = scope === 'user' ? options.home ?? os.homedir() : options.cwd ?? process.cwd();
-  const root = path.join(base, host === 'codex' ? '.agents' : '.claude', 'skills', 'contextpilot');
-  const sourceRoot = fileURLToPath(new URL('../integrations/contextpilot/', import.meta.url));
+  const root = path.join(base, host === 'codex' ? '.agents' : '.claude', 'skills', 'saveusage');
+  const sourceRoot = fileURLToPath(new URL('../integrations/saveusage/', import.meta.url));
   const files: string[] = [];
   function collect(directory: string) {
     for (const item of fs.readdirSync(path.join(sourceRoot, directory), { withFileTypes: true })) {
@@ -30,5 +30,5 @@ export function installSkill(host: 'codex' | 'claude', scope: 'user' | 'project'
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, fs.readFileSync(path.join(sourceRoot, file)), { flag: 'wx', mode: 0o644 });
   }
-  return { status: options.dryRun ? 'preview' : missing.length ? 'installed' : 'already-installed', target: path.join(root, 'SKILL.md'), files: files.length, changes: 'ContextPilot skill and bundled Caveman/Graphify assets only; host configuration and providers untouched.' };
+  return { status: options.dryRun ? 'preview' : missing.length ? 'installed' : 'already-installed', target: path.join(root, 'SKILL.md'), files: files.length, changes: 'SaveUsage skill and bundled Caveman/Graphify assets only; host configuration and providers untouched.' };
 }

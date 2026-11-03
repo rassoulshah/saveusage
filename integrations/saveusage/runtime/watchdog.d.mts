@@ -1,0 +1,1 @@
+export function inspectLoops(input: unknown): { status: string; repetitions: { operation: string; indices: number[] }[]; inspectedEvents: number; threshold: number; action: string; limitation: string };

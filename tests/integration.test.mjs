@@ -18,7 +18,7 @@ test('classification and lightweight simple path', () => {
   const context=prepareContext('hello'); assert.equal(context.repository,null); assert.equal(context.caveman.status,'skipped');
   const c=structuredClone(loadConfig());c.optimization.mode='off';assert.equal(createRetrievalPlan(c,'implementation').useGraphify,false);
   c.graphify.default_budget=5000;c.graphify.max_budget=1000;assert.equal(ConfigSchema.safeParse(c).success,false);
-  assert.equal(cavemanSkill('caveman','/nonexistent-contextpilot-home').status,'available');
+  assert.equal(cavemanSkill('caveman','/nonexistent-saveusage-home').status,'available');
   assert.match(repositoryIdentity().repository,/^https:\/\/github\.com\/[\w.-]+\/[\w.-]+$/);
 });
 
@@ -43,21 +43,26 @@ test('real MCP Graphify discovery, bounded call, missing tools and authenticatio
 
 test('stdio MCP tools operate end to end without writing conversations',async()=>{
   const client=new Client({name:'test',version:'1'});const transport=new StdioClientTransport({command:process.execPath,args:['dist/mcp-server.js'],stderr:'pipe'});
-  try{await client.connect(transport);const {tools}=await client.listTools();assert.equal(tools.length,7);
-    const r=await client.callTool({name:'contextpilot_context',arguments:{prompt:'hello'}});const c=JSON.parse(r.content[0].text);assert.equal(c.task,'simple');assert.equal(c.graphify.action,'skip');
-    const selected=await client.callTool({name:'contextpilot_optimize',arguments:{budget:20,entries:[{id:'r',kind:'requirement',text:'Never remove authentication.'},{id:'duplicate',text:'Never remove authentication.'}]}});assert.equal(JSON.parse(selected.content[0].text).text,'Never remove authentication.');
-    const p=await client.callTool({name:'contextpilot_policy',arguments:{}});assert.equal(JSON.parse(p.content[0].text).providerChangesAllowed,false);
+  try{await client.connect(transport);const {tools}=await client.listTools();assert.equal(tools.length,8);
+    const r=await client.callTool({name:'saveusage_context',arguments:{prompt:'hello'}});const c=JSON.parse(r.content[0].text);assert.equal(c.task,'simple');assert.equal(c.graphify.action,'skip');
+    const selected=await client.callTool({name:'saveusage_optimize',arguments:{budget:20,entries:[{id:'r',kind:'requirement',text:'Never remove authentication.'},{id:'duplicate',text:'Never remove authentication.'}]}});assert.equal(JSON.parse(selected.content[0].text).text,'Never remove authentication.');
+    const ranked=await client.callTool({name:'saveusage_optimize',arguments:{query:'refreshToken',entries:[{id:'auth',text:'refresh_token rotation'},{id:'ui',text:'colors'}]}});
+    assert.deepEqual(JSON.parse(ranked.content[0].text).selectedIds,['auth']);
+    const repeated={operation:'read',input:'same file',output:'unchanged'};
+    const watchdog=await client.callTool({name:'saveusage_watchdog',arguments:{events:[repeated,repeated,repeated]}});
+    assert.equal(JSON.parse(watchdog.content[0].text).status,'repetition-detected');
+    const p=await client.callTool({name:'saveusage_policy',arguments:{}});assert.equal(JSON.parse(p.content[0].text).providerChangesAllowed,false);
   }finally{await client.close();}
 });
 
 test('remote server rejects unauthenticated requests and supports authenticated MCP',async()=>{
   const reserve=http.createServer();await new Promise(r=>reserve.listen(0,'127.0.0.1',r));const port=reserve.address().port;await new Promise(r=>reserve.close(r));
-  const token='fixture-secret-'.repeat(4);const child=spawn(process.execPath,['dist/http-server.js'],{env:{...process.env,PORT:String(port),CONTEXTPILOT_MCP_TOKEN:token},stdio:['ignore','ignore','pipe']});
+  const token='fixture-secret-'.repeat(4);const child=spawn(process.execPath,['dist/http-server.js'],{env:{...process.env,PORT:String(port),SAVEUSAGE_MCP_TOKEN:token},stdio:['ignore','ignore','pipe']});
   const client=new Client({name:'http-test',version:'1'});
   try{
     await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('startup timeout')),5000);child.stderr.once('data',()=>{clearTimeout(timer);resolve();});child.once('error',reject);});
     const url=`http://127.0.0.1:${port}/mcp`;assert.equal((await fetch(url,{method:'POST'})).status,401);
     assert.equal((await fetch(url,{method:'POST',headers:{Authorization:`Bearer ${token}`,Origin:'https://evil.example'}})).status,403);
-    await client.connect(new StreamableHTTPClientTransport(new URL(url),{requestInit:{headers:{Authorization:`Bearer ${token}`}}}));assert.equal((await client.listTools()).tools.length,7);
+    await client.connect(new StreamableHTTPClientTransport(new URL(url),{requestInit:{headers:{Authorization:`Bearer ${token}`}}}));assert.equal((await client.listTools()).tools.length,8);
   }finally{await client.close();child.kill();}
 });

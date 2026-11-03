@@ -13,6 +13,6 @@ test('Codex native bridge discovers and calls MCP without inference or durable h
 });
 
 test('missing native executable fails cleanly',async()=>{
- const h=new CodexHost('/nonexistent-contextpilot-codex');
+ const h=new CodexHost('/nonexistent-saveusage-codex');
  try {await assert.rejects(h.initialize(),/unavailable/);}finally{h.close();}
 });

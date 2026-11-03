@@ -14,11 +14,11 @@ export function repositoryIdentity(cwd = process.cwd()) {
   return { root, repository: match ? `https://${match[1]}/${match[2]}` : null, commit: git('rev-parse', 'HEAD'), dirty: root ? Boolean(git('status', '--porcelain')) : null };
 }
 
-export async function withGraphify<T>(endpoint: string, run: (client: Client) => Promise<T>, token = process.env.CONTEXTPILOT_GRAPHIFY_TOKEN): Promise<T> {
+export async function withGraphify<T>(endpoint: string, run: (client: Client) => Promise<T>, token = process.env.SAVEUSAGE_GRAPHIFY_TOKEN): Promise<T> {
   const url = new URL(endpoint);
   if (url.username || url.password || url.search || url.hash) throw new Error('Graphify endpoint must not contain credentials, query, or fragment');
   if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))) throw new Error('Graphify requires HTTPS except loopback');
-  const client = new Client({ name: 'contextpilot', version: '0.3.0' });
+  const client = new Client({ name: 'saveusage', version: '0.4.0' });
   const transport = new StreamableHTTPClientTransport(url, {
     requestInit: token ? { headers: { Authorization: `Bearer ${token}` } } : undefined,
     fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.any([AbortSignal.timeout(10000), ...(init?.signal ? [init.signal] : [])]) })

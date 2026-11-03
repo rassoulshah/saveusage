@@ -1,10 +1,10 @@
 {
-  "name": "@rassoulshah/contextpilot",
-  "version": "0.3.0",
-  "description": "Combined Caveman skill and CLI, local Graphify engine, and protected context budgeting",
+  "name": "@rassoulshah/saveusage",
+  "version": "0.4.0",
+  "description": "Local code graphs, query-aware context selection, freshness checks and repetition detection for coding agents",
   "type": "module",
   "bin": {
-    "contextpilot": "./dist/cli.js"
+    "saveusage": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -15,7 +15,8 @@
     "mcp:http": "node dist/http-server.js",
     "prepack": "npm run verify:vendor && npm run build",
     "benchmark": "npm run build && node scripts/benchmark.mjs",
-    "verify:vendor": "node scripts/check-vendor.mjs"
+    "verify:vendor": "node scripts/check-vendor.mjs",
+    "benchmark:retrieval": "npm run build && node scripts/benchmark-retrieval.mjs"
   },
   "engines": {
     "node": ">=22.13.0"
@@ -34,16 +35,17 @@
   "license": "MIT AND Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rassoulshah/contextpilot.git"
+    "url": "git+https://github.com/rassoulshah/saveusage.git"
   },
-  "homepage": "https://github.com/rassoulshah/contextpilot#readme",
+  "homepage": "https://github.com/rassoulshah/saveusage#readme",
   "bugs": {
-    "url": "https://github.com/rassoulshah/contextpilot/issues"
+    "url": "https://github.com/rassoulshah/saveusage/issues"
   },
   "files": [
     "dist",
     "integrations",
     "hooks",
+    "commands",
     ".claude-plugin",
     "config/default.yaml",
     "README.md",
@@ -52,7 +54,9 @@
     "scripts/benchmark.mjs",
     "docs",
     "THIRD_PARTY_NOTICES.md",
-    "scripts/check-vendor.mjs"
+    "scripts/check-vendor.mjs",
+    "scripts/benchmark-retrieval.mjs",
+    "CHANGELOG.md"
   ],
   "publishConfig": {
     "access": "public"

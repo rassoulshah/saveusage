@@ -1,4 +1,4 @@
-import type { ContextPilotConfig } from "./config.js";
+import type { SaveUsageConfig } from "./config.js";
 
 export type TaskKind =
   | "simple"
@@ -17,7 +17,7 @@ export interface RetrievalPlan {
 }
 
 export function createRetrievalPlan(
-  config: ContextPilotConfig,
+  config: SaveUsageConfig,
   task: TaskKind
 ): RetrievalPlan {
   const complex = ["implementation", "debugging", "review"].includes(task);

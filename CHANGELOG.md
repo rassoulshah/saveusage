@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.0 - 2026-11-03
+
+- Rename the project, package, CLI, plugin, MCP tools and configuration to SaveUsage.
+- Store graph/cache data in `saveusage/` and local runtime data under the SaveUsage name.
+
+- Detect stale Git-visible graph snapshots, expose graph status, and refuse stale queries until reindexing.
+- Add optional query-aware BM25 context selection with matched-term and omission explanations.
+- Add a stateless exact-repeat watchdog through MCP, CLI, and the portable skill runtime.
+- Teach scoped searches, changed-hypothesis retries, and concise explicit handoffs.
+- Add a source-based retrieval evaluation and public save-tokens topic design review.
+- Preserve existing priority selection when no query is supplied and all protected-text guarantees.
+
 ## 0.3.0
 
 - Bundle official Caveman 4.0.1 skill/CLI and Graphify 0.9.100 wheel/references.

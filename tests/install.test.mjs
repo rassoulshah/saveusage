@@ -6,7 +6,7 @@ import path from 'node:path';
 import { installSkill } from '../dist/install.js';
 
 test('portable skill installation preserves host settings and refuses to overwrite existing work',()=>{
- const home=fs.mkdtempSync(path.join(os.tmpdir(),'contextpilot-install-'));
+ const home=fs.mkdtempSync(path.join(os.tmpdir(),'saveusage-install-'));
  try {
   fs.mkdirSync(path.join(home,'.codex'),{recursive:true});
   const config=path.join(home,'.codex','config.toml');const settings='model_provider = "custom"\n';fs.writeFileSync(config,settings);

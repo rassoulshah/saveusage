@@ -1,6 +1,6 @@
 # Bundled upstream components
 
-ContextPilot's own code is MIT-licensed. Bundled upstream components retain their
+SaveUsage's own code is MIT-licensed. Bundled upstream components retain their
 original licenses, copyright and notices. The combined distribution's SPDX
 expression is **MIT AND Apache-2.0**. Neither upstream project endorses this bundle.
 
@@ -10,16 +10,16 @@ Source: https://github.com/JuliusBrussee/caveman
 
 Pinned source commit: d0be14f2dc92a99d12e717465d6908723ab9bfdb.
 The original balanced Caveman skill is included unchanged as
-`integrations/contextpilot/bundled/caveman/skill.md` (filename relocated).
+`integrations/saveusage/bundled/caveman/skill.md` (filename relocated).
 The official @caveman-ai/cli 4.0.1 npm distribution is copied unchanged under
-`integrations/contextpilot/bundled/caveman/cli/`.
+`integrations/saveusage/bundled/caveman/cli/`.
 
 Apache-2.0 license and original NOTICE/LICENSE-MIT are preserved. The CLI's
 additional upstream NOTICE includes embedded MIT dependencies and their terms.
 No Caveman native engine binaries, fonts, inference proxy service, account or
-subscription are supplied by ContextPilot. ContextPilot does not activate proxy,
+subscription are supplied by SaveUsage. SaveUsage does not activate proxy,
 routing/login/installer features. Its wrapper disables Caveman telemetry and uses
-ContextPilot-owned state only for the child command; user settings stay unchanged.
+SaveUsage-owned state only for the child command; user settings stay unchanged.
 
 ## Graphify 0.9.100 — Graphify Labs contributors
 
@@ -27,7 +27,7 @@ Source: https://github.com/Graphify-Labs/graphify
 
 Pinned source commit: cb103fb4356d0a9deaaf61dfc4530e4106a8c0a9.
 The official graphifyy 0.9.100 Python wheel is bundled unchanged under
-`integrations/contextpilot/bundled/graphify/`. Its Apache-2.0 LICENSE and NOTICE
+`integrations/saveusage/bundled/graphify/`. Its Apache-2.0 LICENSE and NOTICE
 are copied alongside it. The original skill and Claude references are extracted
 unchanged for reference; only their placement/skill filename differs.
 
@@ -40,10 +40,10 @@ is not bundled or made free by this redistribution.
 
 ## Integrity and integration changes
 
-`integrations/contextpilot/bundled/manifest.json` records pinned distribution
+`integrations/saveusage/bundled/manifest.json` records pinned distribution
 URLs, upstream commits, npm integrity, wheel SHA-256 and every vendored file's
 SHA-256. Run `npm run verify:vendor` before packaging. The original upstream code
-is unmodified; ContextPilot adds its own installer, Node adapter, bounded MCP
+is unmodified; SaveUsage adds its own installer, Node adapter, bounded MCP
 wrapper, provenance records and documentation outside those upstream files.
 Updating a pinned version requires rechecking licenses, integrity and local
 end-to-end behavior. No floating update or automatic upstream reinstall occurs.

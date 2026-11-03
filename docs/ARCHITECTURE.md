@@ -1,6 +1,6 @@
 # Architecture
 
-ContextPilot is a free local plugin/skill plus an optional CLI/MCP service.
+SaveUsage is a free local plugin/skill plus an optional CLI/MCP service.
 
 ## Local core
 

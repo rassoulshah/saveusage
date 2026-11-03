@@ -5,3 +5,5 @@ export function bundledStatus(root?: string): { caveman: { version: string; skil
 export function setupGraphify(options?: { dataDir?: string }): Promise<{ status: string; root: string; python: string; version: string }>;
 export function graphCommand(operation: string, args?: string[], options?: { dataDir?: string; cwd?: string; budget?: number }): Promise<{ code: number; stdout: string; stderr: string }>;
 export function cavemanCommand(args?: string[], options?: { dataDir?: string }): Promise<{ code: number; stdout: string; stderr: string }>;
+
+export function graphStatus(cwd?: string): { status: string; files?: number; scope: string; action: string };

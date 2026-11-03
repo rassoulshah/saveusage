@@ -4,11 +4,11 @@ import { timingSafeEqual } from 'node:crypto';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createServer } from './mcp-server.js';
 
-const token = process.env.CONTEXTPILOT_MCP_TOKEN;
-if (!token || Buffer.byteLength(token) < 32) throw new Error('Set CONTEXTPILOT_MCP_TOKEN to a random secret of at least 32 bytes');
+const token = process.env.SAVEUSAGE_MCP_TOKEN;
+if (!token || Buffer.byteLength(token) < 32) throw new Error('Set SAVEUSAGE_MCP_TOKEN to a random secret of at least 32 bytes');
 const secret = Buffer.from(`Bearer ${token}`);
 const port = Number(process.env.PORT ?? 8787);
-const host = process.env.CONTEXTPILOT_BIND ?? '127.0.0.1';
+const host = process.env.SAVEUSAGE_BIND ?? '127.0.0.1';
 const server = http.createServer(async (req, res) => {
   const provided = Buffer.from(req.headers.authorization ?? '');
   if (provided.length !== secret.length || !timingSafeEqual(provided, secret)) { res.writeHead(401); res.end(); return; }
@@ -23,5 +23,5 @@ const server = http.createServer(async (req, res) => {
 });
 server.requestTimeout = 20000;
 server.headersTimeout = 10000;
-server.listen(port, host, () => process.stderr.write(`ContextPilot MCP listening on ${host}:${port}\n`));
+server.listen(port, host, () => process.stderr.write(`SaveUsage MCP listening on ${host}:${port}\n`));
 for (const signal of ['SIGTERM', 'SIGINT'] as const) process.on(signal, () => server.close());

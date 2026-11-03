@@ -1,18 +1,18 @@
 # Usage and integrations
 
-ContextPilot includes Caveman 4.0.1 and Graphify 0.9.100. No separate upstream
+SaveUsage includes Caveman 4.0.1 and Graphify 0.9.100. No separate upstream
 plugin or cloud account is required. See the README for installation and setup.
 Caveman instructions are read once for substantial tasks; local Graphify supplies
 structural retrieval. The context selector preserves protected text.
 
 ## MCP in Codex and Claude Code
 
-After globally installing a ContextPilot release tarball, inspect the host's MCP
+After globally installing a SaveUsage release tarball, inspect the host's MCP
 list, back up host configuration, then add only if the name is absent:
 
 ```sh
-codex mcp add contextpilot -- contextpilot mcp
-claude mcp add --scope user contextpilot -- contextpilot mcp
+codex mcp add saveusage -- saveusage mcp
+claude mcp add --scope user saveusage -- saveusage mcp
 ```
 
 Use an absolute installed executable path if your GUI host has a different PATH.
@@ -25,7 +25,7 @@ schema context; omit MCP if skill-only guidance fits your workflow.
 
 Local Graphify is the default. Set graphify.backend to cloud only for cloud planning.
 Configure your own Graphify MCP server and account; no personal credentials or
-repository configuration are shipped with ContextPilot. The code Graphify service
+repository configuration are shipped with SaveUsage. The code Graphify service
 is https://graphify.com and its console is https://app.graphify.com.
 getgraphify.com is a different product and is not this integration.
 
@@ -38,11 +38,11 @@ claude mcp add --scope user --transport http graphify https://api.graphify.com/m
 
 Claude has independent authentication; use its `/mcp` UI. Never copy tokens between
 hosts. Standalone direct access uses an optional operator-provided
-CONTEXTPILOT_GRAPHIFY_TOKEN environment secret; it does not import host tokens.
+SAVEUSAGE_GRAPHIFY_TOKEN environment secret; it does not import host tokens.
 
 ```sh
-contextpilot graphify-status --host codex
-contextpilot graphify-status --host codex --tool graph_stats
+saveusage graphify-status --host codex
+saveusage graphify-status --host codex --tool graph_stats
 ```
 
 The native adapter uses the installed `codex app-server` experimental JSON-RPC
@@ -67,23 +67,23 @@ Upstream call edges describe static indexed coverage, not runtime execution proo
 
 The original balanced skill and official CLI distribution are bundled. The host
 reads the skill when needed; it is not injected in full on every MCP call.
-`contextpilot caveman --help`, `--version`, and `tools` expose the CLI safely.
+`saveusage caveman --help`, `--version`, and `tools` expose the CLI safely.
 Native caveman-engine binaries are not included; proxy, login, routing and hook
 installation commands are not exposed. No native-engine compression is claimed.
 An existing native Caveman skill can take precedence over the bundled fallback.
 
 ## Local Graphify
 
-Run `contextpilot setup` once, then `contextpilot graph index .` in your project.
+Run `saveusage setup` once, then `saveusage graph index .` in your project.
 Use `graph query "symbols"`, `graph path "from" "to"`, or `graph explain "symbol"`.
 The index uses AST extraction with code-only/no-cluster options and no model calls.
 The MCP server must run with the indexed repository as its working directory.
-`contextpilot_graph` offers query/path/explain with measured output bounds; setup
+`saveusage_graph` offers query/path/explain with measured output bounds; setup
 and indexing stay explicit CLI operations. Refresh stale indexes after changes.
 If setup is unavailable, targeted source reads remain available.
 
 ## ChatGPT
 
-ChatGPT can invoke ContextPilot's MCP tools where its account supports them. See
+ChatGPT can invoke SaveUsage's MCP tools where its account supports them. See
 DEPLOYMENT.md for the optional remote transport. The package does not intercept
 all chats, install a browser extension, or rewrite a hidden context window.

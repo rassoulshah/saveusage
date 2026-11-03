@@ -6,6 +6,9 @@ dist/
 coverage/
 
 # Official vendored CLI runtime is part of the distributable source.
-!integrations/contextpilot/bundled/caveman/cli/dist/
-!integrations/contextpilot/bundled/caveman/cli/dist/**
+!integrations/saveusage/bundled/caveman/cli/dist/
+!integrations/saveusage/bundled/caveman/cli/dist/**
 *.tgz
+
+# SaveUsage generated graph/cache data.
+/saveusage/

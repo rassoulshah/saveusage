@@ -35,3 +35,29 @@ test('empty inputs, special token text and invalid budgets are handled explicitl
  assert.throws(()=>optimizeContext({budget:0,entries:[]}));
  assert.throws(()=>optimizeContext({entries:[{id:'same',text:'a'},{id:'same',text:'b'}]}));
 });
+
+test('query retrieves matching blocks ahead of unrelated high-priority material', () => {
+ const result = optimizeContext({query:'refreshToken',budget:30,entries:[
+  {id:'unrelated',priority:100,text:'Button colors and typography'},
+  {id:'auth',priority:0,text:'refresh_token rotates the token after authentication'},
+  {id:'rule',kind:'constraint',text:'Preserve backward compatibility.'}
+ ]});
+ assert.deepEqual(result.selectedIds,['auth','rule']);
+ assert.equal(result.omitted[0].reason,'no-query-match');
+ assert.deepEqual(result.retrieval.blocks[1].matchedTerms,['refresh','token']);
+ assert.equal(result.retrieval.blocks[2].reason,'protected');
+});
+
+test('query preserves protected duplicates, multilingual matches, stable order and explicit misses', () => {
+ const result = optimizeContext({query:'ورود',budget:100,entries:[
+  {id:'first',text:'Keep exactly.'},{id:'protected',kind:'requirement',text:'Keep exactly.'},
+  {id:'fa',text:'بررسی ورود کاربران'},{id:'noise',text:'unrelated'}
+ ]});
+ assert.equal(result.text,'Keep exactly.\n\nبررسی ورود کاربران');
+ assert.deepEqual(result.duplicates,[{id:'protected',keptId:'first'}]);
+ assert.equal(optimizeContext({query:'missing',entries:[{id:'x',text:'other'}]}).text,'');
+ assert.throws(()=>optimizeContext({query:'---',entries:[]}));
+ const overflow=optimizeContext({query:'token',budget:1,entries:[{id:'p',required:true,text:'Preserve all of these exact words.'},{id:'match',text:'token'}]});
+ assert.equal(overflow.measurement.budgetExceeded,true);
+ assert.equal(overflow.omitted[0].reason,'budget');
+});

@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import fs from "node:fs";
-import { bundledStatus, setupGraphify, graphCommand, cavemanCommand } from "../integrations/contextpilot/runtime/bundle.mjs";
+import { saveContext } from "./save.js";
+import { inspectLoops } from "../integrations/saveusage/runtime/watchdog.mjs";
+import { bundledStatus, setupGraphify, graphCommand, cavemanCommand } from "../integrations/saveusage/runtime/bundle.mjs";
 import { installSkill } from "./install.js";
 import { optimizeContext } from "./optimizer.js";
 import { codexGraphifyStatus } from "./codex-host.js";
@@ -36,23 +38,25 @@ function existsOnPath(binary: string): boolean {
 }
 
 function help(): void {
-  out(`ContextPilot 0.3.0
+  out(`SaveUsage 0.4.0
 
 Usage:
-  contextpilot init
-  contextpilot install <codex|claude> [--project] [--dry-run]
-  contextpilot setup [codex|claude] [--project]
-  contextpilot bundled
-  contextpilot graph <index|query|path|explain> <arguments>
-  contextpilot caveman [--help|--version|tools]
-  contextpilot optimize <input.json|->
-  contextpilot mcp
-  contextpilot doctor
-  contextpilot status
-  contextpilot plan <${tasks.join("|")}>
-  contextpilot context <prompt>
-  contextpilot graphify-status [--host codex] [--tool name]
-  contextpilot integrations
+  saveusage init
+  saveusage install <codex|claude> [--project] [--dry-run]
+  saveusage setup [codex|claude] [--project]
+  saveusage bundled
+  saveusage graph <index|query|path|explain|status> <arguments>
+  saveusage caveman [--help|--version|tools]
+  saveusage save <input.json|-> [--no-graph] [--store <new-file.json>]
+  saveusage optimize <input.json|->
+  saveusage watchdog <events.json|->
+  saveusage mcp
+  saveusage doctor
+  saveusage status
+  saveusage plan <${tasks.join("|")}>
+  saveusage context <prompt>
+  saveusage graphify-status [--host codex] [--tool name]
+  saveusage integrations
 
 Config: ${configPath}`);
 }
@@ -61,7 +65,7 @@ try {
   switch (command) {
     case "--version":
     case "-v":
-      out("0.3.0");
+      out("0.4.0");
       break;
     case "help":
     case "--help":
@@ -98,11 +102,26 @@ try {
       out(JSON.stringify(installSkill(host, args.includes("--project") ? "project" : "user", { dryRun: args.includes("--dry-run") }), null, 2));
       break;
     }
+    case "save": {
+      if (!args.length || args[0].startsWith('--')) throw new Error('Provide an input JSON file, or - for stdin');
+      let store: string | undefined;
+      let graph = true;
+      for (let i = 1; i < args.length; i++) {
+        if (args[i] === '--no-graph') graph = false;
+        else if (args[i] === '--store' && !store && args[i + 1] && !args[i + 1].startsWith('--')) store = args[++i];
+        else throw new Error('Usage: saveusage save <input.json|-> [--no-graph] [--store <new-file.json>]');
+      }
+      const raw = fs.readFileSync(args[0] === '-' ? 0 : args[0], 'utf8');
+      if (Buffer.byteLength(raw) > 2000000) throw new Error('Input exceeds 2 MB');
+      out(JSON.stringify(await saveContext(JSON.parse(raw), { graph, store })));
+      break;
+    }
+    case "watchdog":
     case "optimize": {
       if (args.length !== 1) throw new Error("Provide an input JSON file, or - for stdin");
       const input = fs.readFileSync(args[0] === "-" ? 0 : args[0], "utf8");
       if (Buffer.byteLength(input) > 2000000) throw new Error("Input exceeds 2 MB");
-      out(JSON.stringify(optimizeContext(JSON.parse(input)), null, 2));
+      out(JSON.stringify(command === "watchdog" ? inspectLoops(JSON.parse(input)) : optimizeContext(JSON.parse(input)), null, 2));
       break;
     }
     case "mcp": {
@@ -120,7 +139,7 @@ try {
       break;
     case "doctor": {
       const config = loadConfig();
-      out("✓ ContextPilot configuration valid");
+      out("✓ SaveUsage configuration valid");
       out(`✓ Node.js ${process.versions.node}`);
       for (const binary of ["codex", "claude"]) {
         out(
@@ -135,8 +154,8 @@ try {
         }`
       );
       out(`Caveman skill: ${cavemanSkill(config.caveman.mode).status}; bundled CLI ${bundledStatus().caveman.version}`);
-      out(`Bundled Graphify ${bundledStatus().graphify.version}: ${bundledStatus().graphify.setupComplete ? "runtime ready" : "run contextpilot setup"}`);
-      out("Run contextpilot graphify-status for live connectivity; repository indexing remains separately verified.");
+      out(`Bundled Graphify ${bundledStatus().graphify.version}: ${bundledStatus().graphify.setupComplete ? "runtime ready" : "run saveusage setup"}`);
+      out("Run saveusage graphify-status for live connectivity; repository indexing remains separately verified.");
       out("! Existing provider and credential settings are not modified.");
       break;
     }
@@ -190,7 +209,7 @@ try {
       out(`See docs/INTEGRATIONS.md for additive host setup and rollback.
 Check MCP lists before adding any server. Preserve existing provider/model/auth settings.
 Caveman and Graphify are optional; the local core needs no account or API key.
-Run contextpilot graphify-status for a real MCP handshake. Host OAuth remains separate.`);
+Run saveusage graphify-status for a real MCP handshake. Host OAuth remains separate.`);
       break;
     default:
       help();

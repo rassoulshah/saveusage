@@ -44,11 +44,11 @@ export const ConfigSchema = z.object({
   })
 }).refine(c => c.graphify.default_budget <= c.graphify.max_budget, { message: "default_budget must not exceed max_budget" });
 
-export type ContextPilotConfig = z.infer<typeof ConfigSchema>;
-export const configDir = path.join(os.homedir(), ".config", "contextpilot");
+export type SaveUsageConfig = z.infer<typeof ConfigSchema>;
+export const configDir = path.join(os.homedir(), ".config", "saveusage");
 export const configPath = path.join(configDir, "config.yaml");
 
-const defaults: ContextPilotConfig = {
+const defaults: SaveUsageConfig = {
   version: 1,
   optimization: {
     mode: "balanced",
@@ -80,7 +80,7 @@ const defaults: ContextPilotConfig = {
   }
 };
 
-export function loadConfig(): ContextPilotConfig {
+export function loadConfig(): SaveUsageConfig {
   if (!fs.existsSync(configPath)) return defaults;
   return ConfigSchema.parse(YAML.parse(fs.readFileSync(configPath, "utf8")));
 }

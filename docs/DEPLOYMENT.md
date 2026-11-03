@@ -2,9 +2,9 @@
 
 The stdio server remains the default. `node dist/http-server.js` starts stateless
 Streamable HTTP at `/mcp`, bound to `127.0.0.1:8787` by default. It refuses startup
-without `CONTEXTPILOT_MCP_TOKEN` containing at least 32 bytes. Supply a random secret
+without `SAVEUSAGE_MCP_TOKEN` containing at least 32 bytes. Supply a random secret
 through the deployment secret store, never a repository file or command argument.
-Use `PORT` and `CONTEXTPILOT_BIND` for your environment.
+Use `PORT` and `SAVEUSAGE_BIND` for your environment.
 
 Run behind a trusted HTTPS reverse proxy. For containers set the bind address to
 `0.0.0.0` and publish only on the proxy's private network. Add proxy body limits,
@@ -28,5 +28,5 @@ Deployment is single-tenant: tools expose the deployment's repository identity a
 installed Caveman instructions. Mount only the intended repository and skill files,
 never an entire home directory or host credentials. Remote repository identity is
 that deployment's checkout, not the user's computer. Graphify OAuth remains in the
-agent host; a service token, if provisioned, uses CONTEXTPILOT_GRAPHIFY_TOKEN.
+agent host; a service token, if provisioned, uses SAVEUSAGE_GRAPHIFY_TOKEN.
 No remote service has been deployed by this change.

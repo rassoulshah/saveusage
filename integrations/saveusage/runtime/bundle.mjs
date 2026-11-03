@@ -1,4 +1,6 @@
 import fs from 'node:fs';
+import { sourceSnapshot, recordSnapshot, graphStatus } from './freshness.mjs';
+export { graphStatus } from './freshness.mjs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -9,7 +11,7 @@ const skillRoot = fileURLToPath(new URL('../', import.meta.url));
 const bundleRoot = path.join(skillRoot, 'bundled');
 export const manifest = JSON.parse(fs.readFileSync(path.join(bundleRoot, 'manifest.json'), 'utf8'));
 export function dataRoot() {
-  return path.join(process.env.XDG_DATA_HOME || (process.platform === 'win32' ? process.env.LOCALAPPDATA : '') || path.join(os.homedir(), '.local', 'share'), 'contextpilot');
+  return path.join(process.env.XDG_DATA_HOME || (process.platform === 'win32' ? process.env.LOCALAPPDATA : '') || path.join(os.homedir(), '.local', 'share'), 'saveusage');
 }
 export function runtimePaths(root = dataRoot()) {
   const environment = path.join(root, `graphify-${manifest.graphify.version}`);
@@ -41,7 +43,7 @@ async function checked(command, args, options) {
 export function bundledStatus(root = dataRoot()) {
   const runtime = runtimePaths(root);
   return { caveman: { version: manifest.caveman.version, skill: path.join(bundleRoot, 'caveman', 'skill.md'), cli: path.join(bundleRoot, 'caveman', 'cli', 'dist', 'index.js'), engineBinariesBundled: false },
-    graphify: { version: manifest.graphify.version, wheelBundled: true, python: runtime.python, setupComplete: fs.existsSync(path.join(runtime.root, '.contextpilot-ready.json')), requires: 'Python >=3.10; uv preferred, otherwise venv/pip. Setup downloads Python dependencies, never repository content.' } };
+    graphify: { version: manifest.graphify.version, wheelBundled: true, python: runtime.python, setupComplete: fs.existsSync(path.join(runtime.root, '.saveusage-ready.json')), requires: 'Python >=3.10; uv preferred, otherwise venv/pip. Setup downloads Python dependencies, never repository content.' } };
 }
 export async function setupGraphify(options = {}) {
   const runtime = runtimePaths(options.dataDir);
@@ -50,7 +52,7 @@ export async function setupGraphify(options = {}) {
   if (actual !== manifest.graphify.sha256) throw new Error('Bundled Graphify wheel integrity check failed');
   if (fs.existsSync(runtime.python)) {
     const version = await checked(runtime.python, ['-I', '-c', 'import importlib.metadata; print(importlib.metadata.version("graphifyy"))']).catch(() => null);
-    if (version?.stdout.trim() === manifest.graphify.version && fs.existsSync(path.join(runtime.root, '.contextpilot-ready.json'))) return { status: 'ready', ...runtime, version: manifest.graphify.version };
+    if (version?.stdout.trim() === manifest.graphify.version && fs.existsSync(path.join(runtime.root, '.saveusage-ready.json'))) return { status: 'ready', ...runtime, version: manifest.graphify.version };
   }
   fs.mkdirSync(path.dirname(runtime.root), { recursive: true });
   const owner = runtime.root + '.owner.json';
@@ -58,8 +60,8 @@ export async function setupGraphify(options = {}) {
   const lock = runtime.root + '.lock';
   const lockFd = fs.openSync(lock, 'wx', 0o600);
   try {
-    fs.writeFileSync(owner, JSON.stringify({ product: 'contextpilot', graphify: manifest.graphify.version }), { mode: 0o600 });
-    const candidates = process.env.CONTEXTPILOT_PYTHON ? [process.env.CONTEXTPILOT_PYTHON] : process.platform === 'win32' ? ['python', 'python3'] : ['python3', 'python'];
+    fs.writeFileSync(owner, JSON.stringify({ product: 'saveusage', graphify: manifest.graphify.version }), { mode: 0o600 });
+    const candidates = process.env.SAVEUSAGE_PYTHON ? [process.env.SAVEUSAGE_PYTHON] : process.platform === 'win32' ? ['python', 'python3'] : ['python3', 'python'];
     let python;
     for (const candidate of candidates) {
       const result = await capture(candidate, ['-c', 'import sys; print(sys.executable); raise SystemExit(0 if sys.version_info >= (3,10) else 1)']).catch(() => null);
@@ -75,19 +77,25 @@ export async function setupGraphify(options = {}) {
     else await checked(runtime.python, ['-I', '-m', 'pip', 'install', '--only-binary=:all:', wheel], { timeout: 300000 });
     const version = await checked(runtime.python, ['-I', '-c', 'import importlib.metadata; print(importlib.metadata.version("graphifyy"))']);
     if (version.stdout.trim() !== manifest.graphify.version) throw new Error('Graphify runtime version mismatch');
-    fs.writeFileSync(path.join(runtime.root, '.contextpilot-ready.json'), JSON.stringify({ version: manifest.graphify.version, wheelSha256: actual }), { mode: 0o600 });
+    fs.writeFileSync(path.join(runtime.root, '.saveusage-ready.json'), JSON.stringify({ version: manifest.graphify.version, wheelSha256: actual }), { mode: 0o600 });
     return { status: 'ready', ...runtime, version: manifest.graphify.version };
   } finally { fs.closeSync(lockFd); fs.unlinkSync(lock); }
 }
 export async function graphCommand(operation, args = [], options = {}) {
+  if (operation === 'status') {
+    if (args.length) throw new Error('Graph status accepts no arguments');
+    return { code: 0, stdout: JSON.stringify(graphStatus(options.cwd), null, 2) + '\n', stderr: '' };
+  }
   const runtime = runtimePaths(options.dataDir);
-  if (!fs.existsSync(path.join(runtime.root, '.contextpilot-ready.json'))) throw new Error('Run contextpilot setup to initialize the bundled Graphify runtime.');
+  if (!fs.existsSync(path.join(runtime.root, '.saveusage-ready.json'))) throw new Error('Run saveusage setup to initialize the bundled Graphify runtime.');
   const cwd = path.resolve(options.cwd ?? process.cwd());
-  const graph = path.join(cwd, 'graphify-out', 'graph.json');
+  const graph = path.join(cwd, 'saveusage', 'graph.json');
   let command;
+  let target, before;
   if (operation === 'index') {
     if (args.length > 1) throw new Error('Index accepts one directory');
-    const target = path.resolve(cwd, args[0] ?? '.');
+    target = path.resolve(cwd, args[0] ?? '.');
+    before = sourceSnapshot(target);
     command = ['extract', target, '--code-only', '--no-cluster', '--max-workers', '1'];
   } else if (operation === 'query') {
     if (args.length !== 1 || !args[0]) throw new Error('Provide one quoted graph question');
@@ -101,10 +109,23 @@ export async function graphCommand(operation, args = [], options = {}) {
     if (args.length !== 1 || !args[0] || args[0].startsWith('-')) throw new Error('Provide one symbol name');
     command = ['explain', args[0], '--graph', graph];
   } else throw new Error('Choose graph index, query, path or explain');
-  return capture(runtime.python, ['-I', '-m', 'graphify', ...command], { cwd, timeout: operation === 'index' ? 180000 : 30000 });
+  if (operation !== 'index') {
+    const status = graphStatus(cwd);
+    if (status.status === 'stale') throw new Error(status.action);
+  }
+  const result = await capture(runtime.python, ['-I', '-m', 'graphify', ...command], { cwd, env: { ...process.env, GRAPHIFY_OUT: path.join(target ?? cwd, 'saveusage') }, timeout: operation === 'index' ? 180000 : 30000 });
+  if (operation === 'index' && result.code === 0) {
+    const saved = recordSnapshot(target, before);
+    if (!saved) {
+      const old = path.join(target, 'saveusage', 'saveusage-snapshot.json');
+      if (fs.existsSync(old)) fs.unlinkSync(old);
+      result.stderr += '\nFreshness unknown: no stable supported Git snapshot was available.\n';
+    }
+  }
+  return result;
 }
 export async function cavemanCommand(args = [], options = {}) {
-  if (args.length && !['--help', '--version', 'tools'].includes(args[0])) throw new Error('ContextPilot exposes bundled Caveman help/version/tools only; its native skill is used automatically. Proxy, login, routing and hook installers are not enabled.');
+  if (args.length && !['--help', '--version', 'tools'].includes(args[0])) throw new Error('SaveUsage exposes bundled Caveman help/version/tools only; its native skill is used automatically. Proxy, login, routing and hook installers are not enabled.');
   if (args.length > 1) throw new Error('Use caveman --help, --version or tools');
   const state = path.join(options.dataDir ?? dataRoot(), 'caveman');
   return capture(process.execPath, [path.join(bundleRoot, 'caveman', 'cli', 'dist', 'index.js'), ...(args.length ? args : ['--help'])], {
@@ -116,6 +137,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   try {
     const [command = 'status', ...args] = process.argv.slice(2);
     if (command === 'setup') console.log(JSON.stringify(await setupGraphify(), null, 2));
+    else if (command === 'graph-status') console.log(JSON.stringify(graphStatus(), null, 2));
     else if (command === 'status') console.log(JSON.stringify(bundledStatus(), null, 2));
     else {
       const result = command === 'caveman' ? await cavemanCommand(args) : await graphCommand(command, args);

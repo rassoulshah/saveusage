@@ -1,14 +1,14 @@
 {
-  "name": "contextpilot-plugins",
+  "name": "saveusage-plugins",
   "owner": {
-    "name": "ContextPilot contributors"
+    "name": "SaveUsage contributors"
   },
   "plugins": [
     {
-      "name": "contextpilot",
+      "name": "saveusage",
       "source": "./",
-      "description": "Caveman + local Graphify + protected context budgeting, bundled and free",
-      "version": "0.3.0"
+      "description": "Local code graphs, query-aware context budgets, freshness checks and repetition detection",
+      "version": "0.4.0"
     }
   ],
   "metadata": {

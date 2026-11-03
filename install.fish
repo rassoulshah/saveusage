@@ -22,5 +22,5 @@ set -l npm_bin (npm prefix -g)/bin
 if not contains -- $npm_bin $PATH
     fish_add_path $npm_bin
 end
-contextpilot init
-contextpilot doctor
+saveusage init
+saveusage doctor

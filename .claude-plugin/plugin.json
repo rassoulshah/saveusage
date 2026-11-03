@@ -1,14 +1,14 @@
 {
-  "name": "contextpilot",
-  "version": "0.3.0",
-  "description": "Combined Caveman skill and CLI, local Graphify engine, and protected context budgeting",
+  "name": "saveusage",
+  "version": "0.4.0",
+  "description": "Local code graphs, query-aware context selection, freshness checks and repetition detection for coding agents",
   "author": {
-    "name": "ContextPilot contributors"
+    "name": "SaveUsage contributors"
   },
-  "homepage": "https://github.com/rassoulshah/contextpilot",
-  "repository": "https://github.com/rassoulshah/contextpilot",
+  "homepage": "https://github.com/rassoulshah/saveusage",
+  "repository": "https://github.com/rassoulshah/saveusage",
   "license": "MIT AND Apache-2.0",
   "skills": [
-    "./integrations/contextpilot"
+    "./integrations/saveusage"
   ]
 }

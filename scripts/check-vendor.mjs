@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-const root=new URL('../integrations/contextpilot/bundled/',import.meta.url);
+const root=new URL('../integrations/saveusage/bundled/',import.meta.url);
 const manifest=JSON.parse(fs.readFileSync(new URL('manifest.json',root),'utf8'));
 for(const [file,expected]of Object.entries(manifest.files)){
  const location=new URL(file,root);
